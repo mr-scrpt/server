@@ -7,17 +7,17 @@ import { ConfirmAccountDto } from 'src/auth/dto/confirmAccount.dto';
 export class TokenService {
   constructor(private jwtService: JwtService) {}
 
-  create(id: string): string {
-    return this.jwtService.sign({ id });
-  }
-
-  confirm(id: string): string {
-    return this.jwtService.sign({ id }, { expiresIn: '1h' });
+  create(id: string, expiresIn?: string): string {
+    if (!expiresIn) {
+      return this.jwtService.sign({ id });
+    }
+    return this.jwtService.sign({ id }, { expiresIn });
   }
 
   verify(token: string): string {
     try {
       const { id } = this.jwtService.verify(token);
+      console.log('-> in verify');
       return id;
     } catch (error) {
       throw new BadRequestException(error.message);

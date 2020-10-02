@@ -20,9 +20,13 @@ import { UserSerializedDto } from 'src/user/dto/userSerialized.dto';
 
 import { userStatusEnum } from 'src/user/enums/user-active.enum';
 import { UserWithTokenDto } from 'src/user/dto/userWithToken.dto';
-import { ForgotPasswordDto } from './dto/forgotPasswordDto.dto';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { User } from 'src/user/entities/user.entities';
 import { RestorePasswordDto } from './dto/restorePassword.dto';
+import { ReconfirmDto } from './dto/reconfirm.dto';
+import passport from 'passport';
+import { UserIdDto } from 'src/user/dto/userIdDto';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -35,6 +39,24 @@ export class AuthService {
     this.clientAppUrl = this.configService.get<string>('FE_APP_URL');
   }
 
+  private async verifyPassword(
+    plainTextPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    try {
+      return await compare(plainTextPassword, hashedPassword);
+    } catch (err) {
+      throw new HttpException(
+        'Wrong credentials provided',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    return await hash(password, 10);
+  }
+
   async registration(
     registrationDto: RegistrationDto,
   ): Promise<UserSerializedDto> {
@@ -44,20 +66,47 @@ export class AuthService {
   }
 
   //TODO сделать отправку на почту ссылки для подтверждения
-  async confirmationSendLink(user: UserSerializedDto): Promise<void> {
-    const token = this.tokenService.confirm(user._id);
+  async confirmationSendLink(
+    userSerializedDto: UserSerializedDto,
+  ): Promise<void> {
+    const token = this.tokenService.create(userSerializedDto._id, '1h');
     const confirmLink = `${this.clientAppUrl}/auth/confirm?token=${token}`;
+    console.log('-> confirmLink', confirmLink);
   }
 
   async confirm(token: string): Promise<UserSerializedDto> {
     const id = await this.tokenService.verify(token);
-    const user = await this.userService.find(id);
-    if (user && user.status === userStatusEnum.pending) {
+    const user = await this.userService.getById(id);
+
+    if (this.userService.isActiveUser(user.status)) {
+      throw new BadRequestException('User is already confirmed');
+    }
+
+    if (this.userService.isBlockedUser(user.status)) {
+      throw new BadRequestException('User is blocked');
+    }
+
+    if (this.userService.isPendingUser(user.status)) {
       user.status = userStatusEnum.active;
       user.save();
       return this.userService.userSerialized(user.toObject());
     }
+
     throw new BadRequestException('Confirmation error');
+  }
+
+  async reconfirm(reconfirmDto: ReconfirmDto): Promise<void> {
+    const user = await this.userService.getByEmail(reconfirmDto.email);
+
+    if (this.userService.isActiveUser(user.status)) {
+      throw new BadRequestException('User is already confirmed');
+    }
+
+    if (this.userService.isBlockedUser(user.status)) {
+      throw new BadRequestException('User is blocked');
+    }
+
+    this.confirmationSendLink(user._id);
   }
 
   async validateUser({
@@ -67,7 +116,6 @@ export class AuthService {
     try {
       const userGetted = await this.userService.getByEmail(email);
       const isAuth = await this.verifyPassword(password, userGetted.password);
-
       if (!isAuth) {
         throw new Error();
       }
@@ -82,26 +130,10 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<UserWithTokenDto> {
     const user = await this.validateUser(loginDto);
-
     const token = this.tokenService.create(user._id);
 
     const userWithToken = _.assignIn(user, { token });
     return userWithToken;
-  }
-
-  private async verifyPassword(
-    plainTextPassword: string,
-    hashedPassword: string,
-  ): Promise<boolean> {
-    try {
-      console.log('-> here 2');
-      return await compare(plainTextPassword, hashedPassword);
-    } catch (err) {
-      throw new HttpException(
-        'Wrong credentials provided',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
   }
 
   async forgotPassword(forgotDto: ForgotPasswordDto): Promise<void> {
@@ -110,11 +142,13 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('User not found from email');
     }
-
+    if (user && user.status !== userStatusEnum.active) {
+      throw new BadRequestException('User not found confirmed profile');
+    }
     const token = this.tokenService.create(user._id);
-    const forgotLink = `${this.clientAppUrl}/auth/restorePassword?token=${token}`;
+    const restoreLink = `${this.clientAppUrl}/auth/restorePassword?token=${token}`;
+    console.log('-> restore pass', restoreLink);
     // TODO: Отправлять на почту ссылку
-    console.log('-> forgotLink', forgotLink);
   }
 
   async restorePassword(restorePasswordDto: RestorePasswordDto): Promise<void> {
@@ -122,9 +156,9 @@ export class AuthService {
 
     const randomPassword = genpass.generate({ length: 10, numbers: true });
 
-    const randomPasswordHash = await hash(randomPassword, 10);
+    const randomPasswordHash = await this.hashPassword(randomPassword);
 
-    const user = await this.userService.find(id);
+    const user = await this.userService.getById(id);
 
     user.password = randomPasswordHash;
 
@@ -134,5 +168,13 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('User not found from email');
     }
+  }
+
+  async changePassword(userId: string, password: string): Promise<boolean> {
+    //TODO вынести метод по хешированию отдельно
+    const newPassword = await this.hashPassword(password);
+    return await this.userService.update(userId, {
+      password: newPassword,
+    });
   }
 }

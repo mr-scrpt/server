@@ -1,6 +1,8 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { User } from 'src/user/entities/user.entities';
+import { UserIdDto } from 'src/user/dto/userIdDto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -12,8 +14,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  //Вызавится автоматически паспортом и в качестве пейлоада передастася расшифрованый токен в JSON
-  async validate(payload: any) {
-    return { id: payload._id, username: payload.username };
+  //Вызовится автоматически паспортом и в качестве пейлоада передастася расшифрованый токен в JSON
+  async validate(payload: any): Promise<UserIdDto> {
+    const user = { _id: payload.id };
+    return user;
   }
+
+  /*  async validate(req, user: Partial<User>) {
+    //const token = req.header.authorization.slice(7);
+    
+    if (token) {
+      return user;
+    } else {
+      throw new UnauthorizedException();
+    }  
+  } */
 }

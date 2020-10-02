@@ -7,20 +7,24 @@ import * as _ from 'lodash';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { User } from './entities/user.entities';
 import { UserSerializedDto } from './dto/userSerialized.dto';
+import { UserIdDto } from './dto/userIdDto';
+import { ChangePasswordDto } from 'src/auth/dto/changePassword.dto';
+import { userStatusEnum } from './enums/user-active.enum';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async find(id: string): Promise<User> {
+  async getById(id: string): Promise<User> {
     try {
       return await this.userModel.findById({ _id: id }).exec();
     } catch (error) {
+      console.log('-> edd');
       throw new BadRequestException('User not found by id');
     }
   }
 
-  async findAll(): Promise<User[]> {
+  async getAll(): Promise<User[]> {
     try {
       return await this.userModel.find().exec();
     } catch (error) {
@@ -56,5 +60,35 @@ export class UserService {
   userSerialized(user): UserSerializedDto {
     const { password, ...userCreatedSerialized } = user;
     return userCreatedSerialized;
+  }
+
+  async update(userId: string, payload: Partial<User>): Promise<boolean> {
+    try {
+      await this.userModel.updateOne({ _id: userId }, payload);
+
+      return true;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  isActiveUser(userStatus: userStatusEnum): boolean {
+    if (userStatus === userStatusEnum.active) {
+      return true;
+    }
+    return false;
+  }
+  isPendingUser(userStatus: userStatusEnum): boolean {
+    if (userStatus === userStatusEnum.pending) {
+      return true;
+    }
+    return false;
+  }
+
+  isBlockedUser(userStatus: userStatusEnum): boolean {
+    if (userStatus === userStatusEnum.blocked) {
+      return true;
+    }
+    return false;
   }
 }
