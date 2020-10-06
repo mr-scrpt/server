@@ -24,9 +24,6 @@ import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { User } from 'src/user/entities/user.entities';
 import { RestorePasswordDto } from './dto/restorePassword.dto';
 import { ReconfirmDto } from './dto/reconfirm.dto';
-import passport from 'passport';
-import { UserIdDto } from 'src/user/dto/userIdDto';
-import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Injectable()
 export class AuthService {

@@ -75,8 +75,8 @@ export class AuthController {
     console.log('-> in restore');
     await this.authService.restorePassword(restorePasswordDto);
   }
-  //Изменение праролья (залогиненый пользователь)
 
+  //Изменение праролья (залогиненый пользователь)
   @Patch('/changePassword')
   @UseGuards(AuthGuard())
   async changePassword(

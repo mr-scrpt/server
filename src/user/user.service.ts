@@ -7,8 +7,6 @@ import * as _ from 'lodash';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { User } from './entities/user.entities';
 import { UserSerializedDto } from './dto/userSerialized.dto';
-import { UserIdDto } from './dto/userIdDto';
-import { ChangePasswordDto } from 'src/auth/dto/changePassword.dto';
 import { userStatusEnum } from './enums/user-active.enum';
 
 @Injectable()
@@ -19,14 +17,14 @@ export class UserService {
     try {
       return await this.userModel.findById({ _id: id }).exec();
     } catch (error) {
-      console.log('-> edd');
       throw new BadRequestException('User not found by id');
     }
   }
 
   async getAll(): Promise<User[]> {
     try {
-      return await this.userModel.find().exec();
+      const test = await this.userModel.find().exec();
+      return test;
     } catch (error) {
       throw new BadRequestException('Users not found');
     }
