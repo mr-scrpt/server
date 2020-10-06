@@ -2,8 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Exclude, Expose } from 'class-transformer';
 
 import { Document } from 'mongoose';
-import { userStatusEnum } from '../enums/user-active.enum';
-import { userRoleEnum } from '../enums/user-role.enum';
+import { userStatusEnum } from '../enums/userActive.enum';
+import { userGenderEnum } from '../enums/userGender.enum';
+import { userRoleEnum } from '../enums/userRole.enum';
 
 @Schema()
 @Exclude()
@@ -12,7 +13,6 @@ export class User extends Document {
   name: string;
 
   @Prop({ default: '' })
-  @Expose()
   lastname: string;
 
   @Prop({ unique: true })
@@ -20,6 +20,11 @@ export class User extends Document {
 
   @Prop({ unique: true })
   phone: string;
+
+  @Prop({
+    enum: Object.values(userGenderEnum),
+  })
+  gender: userGenderEnum;
 
   @Prop({
     enum: Object.values(userStatusEnum),
@@ -30,7 +35,6 @@ export class User extends Document {
   @Prop({
     default: Date.now(),
   })
-  @Expose()
   registerAt: Date;
 
   @Prop({
@@ -40,14 +44,17 @@ export class User extends Document {
   role: userRoleEnum;
 
   // TODO Почитать про декоратор
-  @Prop()
-  @Expose()
+  @Prop({ select: false })
   password: string;
+
+  //TODO добавить поля адреса для доставки
+  //TODO добавить поля даты рождения - можно поздравлять и предлагать товары, акции
+  //TODO Увлечения для персональных рассылок
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.methods.toJSON = function() {
+/* UserSchema.methods.toJSON = function() {
   var obj = this.toObject();
   delete obj.password;
   return obj;
-};
+}; */

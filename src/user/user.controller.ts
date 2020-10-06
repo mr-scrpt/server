@@ -1,28 +1,24 @@
-import {
-  ClassSerializerInterceptor,
-  Controller,
-  Get,
-  SerializeOptions,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Get, Query, ValidationPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { UserIdDto } from './dto/userId.dto';
+import { User } from './entities/user.entities';
 
 import { UserService } from './user.service';
 
 @ApiTags('User')
 @Controller('user')
-@UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('/getOneById')
+  async getOneById(
+    @Query(new ValidationPipe()) query: UserIdDto,
+  ): Promise<User> {
+    return await this.userService.getOneById(query._id);
+  }
+
   @Get('/getAll')
-  async getAll() {
-    const test2 = await this.userService.getAll();
-    console.log('-> test2', test2);
-    return test2;
-    /* const users = await this.userService.getAll();
-    const usersResponse = users.map(user => user.toJSON());
-    return usersResponse; */
+  async getAll(): Promise<User[]> {
+    return await this.userService.getAll();
   }
 }

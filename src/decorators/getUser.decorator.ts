@@ -3,7 +3,7 @@ import {
   createParamDecorator,
   ExecutionContext,
 } from '@nestjs/common';
-import { UserIdDto } from 'src/user/dto/userIdDto';
+import { UserIdDto } from 'src/user/dto/userId.dto';
 
 export const GetUser = createParamDecorator(
   (data: string, ctx: ExecutionContext): UserIdDto => {

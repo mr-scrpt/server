@@ -18,7 +18,7 @@ import { LoginDto } from './dto/login.dto';
 import { TokenService } from 'src/token/token.service';
 import { UserSerializedDto } from 'src/user/dto/userSerialized.dto';
 
-import { userStatusEnum } from 'src/user/enums/user-active.enum';
+import { userStatusEnum } from 'src/user/enums/userActive.enum';
 import { UserWithTokenDto } from 'src/user/dto/userWithToken.dto';
 import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { User } from 'src/user/entities/user.entities';
@@ -73,7 +73,7 @@ export class AuthService {
 
   async confirm(token: string): Promise<UserSerializedDto> {
     const id = await this.tokenService.verify(token);
-    const user = await this.userService.getById(id);
+    const user = await this.userService.getOneById(id);
 
     if (this.userService.isActiveUser(user.status)) {
       throw new BadRequestException('User is already confirmed');
@@ -155,7 +155,7 @@ export class AuthService {
 
     const randomPasswordHash = await this.hashPassword(randomPassword);
 
-    const user = await this.userService.getById(id);
+    const user = await this.userService.getOneById(id);
 
     user.password = randomPasswordHash;
 

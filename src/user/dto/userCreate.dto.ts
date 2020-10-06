@@ -5,7 +5,9 @@ import {
   IsPhoneNumber,
   IsNotEmpty,
   Matches,
+  IsEnum,
 } from 'class-validator';
+import { userGenderEnum } from '../enums/userGender.enum';
 
 export class UserCreateDto {
   @ApiProperty()
@@ -24,14 +26,20 @@ export class UserCreateDto {
 
   @ApiProperty()
   @IsNotEmpty()
+  @IsPhoneNumber('ua')
+  readonly phone: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  //@IsString()
+  @IsEnum(userGenderEnum)
+  readonly gender: userGenderEnum;
+
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
   readonly password: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsPhoneNumber('ua')
-  readonly phone: string;
 }

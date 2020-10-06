@@ -11,7 +11,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { GetUser } from 'src/decorators/getUser.decorator';
-import { UserIdDto } from 'src/user/dto/userIdDto';
+import { UserIdDto } from 'src/user/dto/userId.dto';
 import { UserSerializedDto } from 'src/user/dto/userSerialized.dto';
 import { User } from 'src/user/entities/user.entities';
 

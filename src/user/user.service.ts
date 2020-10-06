@@ -7,13 +7,13 @@ import * as _ from 'lodash';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { User } from './entities/user.entities';
 import { UserSerializedDto } from './dto/userSerialized.dto';
-import { userStatusEnum } from './enums/user-active.enum';
+import { userStatusEnum } from './enums/userActive.enum';
 
 @Injectable()
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async getById(id: string): Promise<User> {
+  async getOneById(id: string): Promise<User> {
     try {
       return await this.userModel.findById({ _id: id }).exec();
     } catch (error) {
@@ -23,8 +23,7 @@ export class UserService {
 
   async getAll(): Promise<User[]> {
     try {
-      const test = await this.userModel.find().exec();
-      return test;
+      return await this.userModel.find().exec();
     } catch (error) {
       throw new BadRequestException('Users not found');
     }
@@ -33,7 +32,8 @@ export class UserService {
   // TODO не нужне трайкетч, если юзера не находит то возвращает null а не ошибку - проверить везеде
   async getByEmail(email: string): Promise<User> {
     try {
-      return await this.userModel.findOne({ email }).exec();
+      //Получаем только поле пароля
+      return await this.userModel.findOne({ email }, 'password').exec();
     } catch (error) {
       throw new BadRequestException('User not found by email');
     }
