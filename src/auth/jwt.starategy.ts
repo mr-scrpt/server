@@ -16,8 +16,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   //Вызовится автоматически паспортом и в качестве пейлоада передастася расшифрованый токен в JSON
   async validate(payload: any): Promise<UserIdDto> {
-    const user = { _id: payload.id };
-    return user;
+    if (payload.id) {
+      return { _id: payload.id };
+    } else {
+      throw new UnauthorizedException();
+    }
   }
 
   /*  async validate(req, user: Partial<User>) {

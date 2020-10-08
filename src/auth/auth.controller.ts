@@ -9,8 +9,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags } from '@nestjs/swagger';
-import { GetUser } from 'src/decorators/getUser.decorator';
+import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { GetToken } from 'src/token/decorators/getToken.decorators';
+import { GetUser } from 'src/user/decorators/getUser.decorator';
 import { UserIdDto } from 'src/user/dto/userId.dto';
 import { UserSerializedDto } from 'src/user/dto/userSerialized.dto';
 import { User } from 'src/user/entities/user.entities';
@@ -69,10 +70,13 @@ export class AuthController {
 
   //Сброс пароля на автоматический пароль(пользователь не залогинен)
   @Get('/restorePassword')
+  @ApiHeader({
+    name: 'token',
+  })
   async restorePassword(
-    @Query(new ValidationPipe()) restorePasswordDto: RestorePasswordDto,
+    @GetToken(new ValidationPipe()) restorePasswordDto: RestorePasswordDto,
+    //@Query(new ValidationPipe()) restorePasswordDto: RestorePasswordDto,
   ): Promise<void> {
-    console.log('-> in restore');
     await this.authService.restorePassword(restorePasswordDto);
   }
 

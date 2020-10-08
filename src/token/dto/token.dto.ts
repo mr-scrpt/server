@@ -1,7 +1,9 @@
-import { IsString } from 'class-validator';
-import { CreateTokenDto } from './createToken.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class TokenDto extends CreateTokenDto {
+export class TokenDto {
+  @ApiProperty()
+  @IsNotEmpty()
   @IsString()
   token: string;
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash } from 'bcrypt';
 import { Model } from 'mongoose';
@@ -15,9 +19,14 @@ export class UserService {
 
   async getOneById(id: string): Promise<User> {
     try {
-      return await this.userModel.findById({ _id: id }).exec();
+      console.log('->  id', id);
+      const res = await this.userModel.findById({ _id: id }).exec();
+      if (!res) {
+        throw new Error('User Not Found!');
+      }
+      return res;
     } catch (error) {
-      throw new BadRequestException('User not found by id');
+      throw new NotFoundException(error.message);
     }
   }
 
@@ -60,10 +69,14 @@ export class UserService {
     return userCreatedSerialized;
   }
 
-  async update(userId: string, payload: Partial<User>): Promise<boolean> {
+  async updatePassword(userId: string, password: string): Promise<boolean> {
     try {
-      await this.userModel.updateOne({ _id: userId }, payload);
+      //const res = await this.userModel.updateOne({ _id: userId }, password);
 
+      const user = await this.getOneById(userId);
+
+      user.password = await this.hashPassword(password);
+      user.save();
       return true;
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -88,5 +101,8 @@ export class UserService {
       return true;
     }
     return false;
+  }
+  async hashPassword(password: string): Promise<string> {
+    return await hash(password, 10);
   }
 }

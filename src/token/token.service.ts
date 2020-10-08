@@ -17,7 +17,6 @@ export class TokenService {
   verify(token: string): string {
     try {
       const { id } = this.jwtService.verify(token);
-      console.log('-> in verify');
       return id;
     } catch (error) {
       throw new BadRequestException(error.message);

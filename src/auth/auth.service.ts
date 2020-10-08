@@ -50,10 +50,6 @@ export class AuthService {
     }
   }
 
-  private async hashPassword(password: string): Promise<string> {
-    return await hash(password, 10);
-  }
-
   async registration(
     registrationDto: RegistrationDto,
   ): Promise<UserSerializedDto> {
@@ -133,7 +129,7 @@ export class AuthService {
     return userWithToken;
   }
 
-  async forgotPassword(forgotDto: ForgotPasswordDto): Promise<void> {
+  async forgotPassword(forgotDto: ForgotPasswordDto): Promise<boolean> {
     const user: User = await this.userService.getByEmail(forgotDto.email);
 
     if (!user) {
@@ -146,32 +142,35 @@ export class AuthService {
     const restoreLink = `${this.clientAppUrl}/auth/restorePassword?token=${token}`;
     console.log('-> restore pass', restoreLink);
     // TODO: Отправлять на почту ссылку
+    return true;
   }
 
-  async restorePassword(restorePasswordDto: RestorePasswordDto): Promise<void> {
+  //TODO проверить существует ли юзер
+  async restorePassword(
+    restorePasswordDto: RestorePasswordDto,
+  ): Promise<boolean> {
     const id = this.tokenService.verify(restorePasswordDto.token);
 
     const randomPassword = genpass.generate({ length: 10, numbers: true });
 
-    const randomPasswordHash = await this.hashPassword(randomPassword);
+    const randomPasswordHash = await this.userService.hashPassword(
+      randomPassword,
+    );
 
     const user = await this.userService.getOneById(id);
+    if (!user) {
+      throw new BadRequestException('User not found from email');
+    }
 
     user.password = randomPasswordHash;
 
     // TODO: Отправлять на почту новый пароль
+    console.log('-> new password', randomPassword);
     user.save();
-
-    if (!user) {
-      throw new BadRequestException('User not found from email');
-    }
+    return true;
   }
 
   async changePassword(userId: string, password: string): Promise<boolean> {
-    //TODO вынести метод по хешированию отдельно
-    const newPassword = await this.hashPassword(password);
-    return await this.userService.update(userId, {
-      password: newPassword,
-    });
+    return await this.userService.updatePassword(userId, password);
   }
 }
