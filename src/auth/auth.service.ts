@@ -24,6 +24,9 @@ import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 import { User } from 'src/user/entities/user.entities';
 import { RestorePasswordDto } from './dto/restorePassword.dto';
 import { ReconfirmDto } from './dto/reconfirm.dto';
+import { UserCreateDto } from 'src/user/dto/userCreate.dto';
+import { userGenderEnum } from 'src/user/enums/userGender.enum';
+import { userRoleEnum } from 'src/user/enums/userRole.enum';
 
 @Injectable()
 export class AuthService {
@@ -68,34 +71,22 @@ export class AuthService {
   }
 
   async confirm(token: string): Promise<UserSerializedDto> {
-    const id = await this.tokenService.verify(token);
-    const user = await this.userService.getOneById(id);
-
-    if (this.userService.isActiveUser(user.status)) {
-      throw new BadRequestException('User is already confirmed');
-    }
-
-    if (this.userService.isBlockedUser(user.status)) {
-      throw new BadRequestException('User is blocked');
-    }
-
-    if (this.userService.isPendingUser(user.status)) {
-      user.status = userStatusEnum.active;
-      user.save();
-      return this.userService.userSerialized(user.toObject());
-    }
-
-    throw new BadRequestException('Confirmation error');
+    try {
+      const id = await this.tokenService.verify(token);
+      return await this.userService.activedUser(id); 
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }    
   }
 
   async reconfirm(reconfirmDto: ReconfirmDto): Promise<void> {
     const user = await this.userService.getByEmail(reconfirmDto.email);
 
-    if (this.userService.isActiveUser(user.status)) {
+    if (this.userService.isActiveUser(user.meta.status)) {
       throw new BadRequestException('User is already confirmed');
     }
 
-    if (this.userService.isBlockedUser(user.status)) {
+    if (this.userService.isBlockedUser(user.meta.status)) {
       throw new BadRequestException('User is blocked');
     }
 
@@ -107,14 +98,20 @@ export class AuthService {
     password,
   }: LoginDto): Promise<UserSerializedDto> {
     try {
+      
       const userGetted = await this.userService.getByEmail(email);
-      const isAuth = await this.verifyPassword(password, userGetted.password);
+      console.log("-> userG", userGetted);
+      const isAuth = await this.verifyPassword(
+        password,
+        userGetted.login.password,
+      );
+      console.log("-> isA", isAuth);
       if (!isAuth) {
         throw new Error();
       }
       const userSerialized = this.userService.userSerialized(
         userGetted.toObject(),
-      );
+      );      
       return userSerialized;
     } catch (error) {
       throw new UnauthorizedException('Unauthorized user');
@@ -122,20 +119,21 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<UserWithTokenDto> {
+    
     const user = await this.validateUser(loginDto);
     const token = this.tokenService.create(user._id);
-
+    
     const userWithToken = _.assignIn(user, { token });
     return userWithToken;
   }
 
   async forgotPassword(forgotDto: ForgotPasswordDto): Promise<boolean> {
     const user: User = await this.userService.getByEmail(forgotDto.email);
-
+    console.log("-> user", user);
     if (!user) {
       throw new BadRequestException('User not found from email');
     }
-    if (user && user.status !== userStatusEnum.active) {
+    if (user && user.meta.status !== userStatusEnum.active) {
       throw new BadRequestException('User not found confirmed profile');
     }
     const token = this.tokenService.create(user._id);
@@ -162,7 +160,7 @@ export class AuthService {
       throw new BadRequestException('User not found from email');
     }
 
-    user.password = randomPasswordHash;
+    user.login.password = randomPasswordHash;
 
     // TODO: Отправлять на почту новый пароль
     console.log('-> new password', randomPassword);
