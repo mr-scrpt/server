@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { TokenModule } from './token/token.module';
 import { configRoot } from './config.root';
+import { CatModule } from './cat/cat.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { configRoot } from './config.root';
     ),
     AuthModule,
     TokenModule,
+    CatModule,
   ],
   controllers: [AppController],
   providers: [],
