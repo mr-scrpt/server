@@ -9,6 +9,7 @@ import { TokenModule } from './token/token.module';
 import { configRoot } from './config.root';
 import { CatModule } from './cat/cat.module';
 import { TemplateModule } from './template/template.module';
+import { HelpersModule } from './helpers/helpers.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TemplateModule } from './template/template.module';
     TokenModule,
     CatModule,
     TemplateModule,
+    HelpersModule,
   ],
   controllers: [AppController],
   providers: [],

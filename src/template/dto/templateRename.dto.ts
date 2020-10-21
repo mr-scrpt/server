@@ -1,15 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CatCreateDto {
+export class TemplateRenameDto {
   @ApiProperty() 
   @IsString()
-  @IsNotEmpty()
-  readonly name: string;
+  @IsNotEmpty()  
+  readonly id: string;  
 
-  @ApiProperty()
+  @ApiProperty() 
   @IsString()
-  @IsNotEmpty()
-  readonly template: string;
+  @IsNotEmpty()  
+  readonly newName: string; 
 }
- 

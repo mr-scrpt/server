@@ -4,12 +4,14 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Cat extends Document {
-  @Prop()
+  @Prop({unique: true, index: true})
   name: string;
 
-  @Prop()
+  @Prop({index: true})
   template: string;
 
+  @Prop({unique: true})
+  alias: string
   
 }
 

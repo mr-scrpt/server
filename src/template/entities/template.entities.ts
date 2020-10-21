@@ -4,11 +4,11 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Template extends Document {
-  @Prop({unique: true})
+  @Prop({unique: true, index: true})
   name: string;
 
-  @Prop()
-  fields: string;  
+  /* @Prop()
+  fields: string; */  
 }
 
 export const TemplateSchema = SchemaFactory.createForClass(Template);
