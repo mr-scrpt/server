@@ -10,7 +10,7 @@ import { Cat, CatSchema } from './entities/cat.entities';
     MongooseModule.forFeature([
       {
         name: Cat.name,
-        schema: CatSchema
+        schema: CatSchema 
       }
     ])
   ],

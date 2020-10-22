@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 
 @Controller('product')
 export class ProductController {
-  @Post('/create')
+  /* @Post('/create')
   async catCreate(): any{}
 
   @Get('/getAll')
@@ -19,5 +19,5 @@ export class ProductController {
   async catRename(): any{}
 
   @Delete('/delete')
-  async delete():any{}
+  async delete():any{} */
 }

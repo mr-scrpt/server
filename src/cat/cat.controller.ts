@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Patch, Post, ValidationPipe } from '@nes
 import { CatService } from './cat.service';
 import { CatCreateDto } from './dto/catCreate.dto';
 import { CatIdDto } from './dto/catId.dto';
-import { CatRenameDto } from './dto/catRename.dto';
+import { CatUpdateDto } from './dto/catUpdate.dto';
 import { CatTplDto } from './dto/catTpl.dto';
 import { Cat } from './entities/cat.entities';
 
@@ -37,11 +37,11 @@ export class CatController {
   }
 
 
-  @Patch('/rename')
+  @Patch('/update')
   async catRename(
-    @Body(new ValidationPipe()) catRenameDto: CatRenameDto
+    @Body(new ValidationPipe()) catUpdateDto: CatUpdateDto
   ): Promise<CatCreateDto>{
-    return await this.catService.catRename(catRenameDto)
+    return await this.catService.catUpdate(catUpdateDto)
   }
 
   @Delete('/delete')
