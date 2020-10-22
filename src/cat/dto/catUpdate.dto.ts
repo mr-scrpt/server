@@ -1,10 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { CatDto } from './cat.dto';
+import { CatCreateDto } from './catCreate.dto';
 
-export class CatUpdateDto extends PartialType(CatDto){
-  @ApiProperty() 
+export class CatUpdateDto extends PartialType(CatCreateDto) {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  readonly id: string;  
+  readonly id: string;
+
 }

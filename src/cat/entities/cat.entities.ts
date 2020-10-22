@@ -4,15 +4,18 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Cat extends Document {
-  @Prop({unique: true, index: true})
+  @Prop({ unique: true, index: true })
   name: string;
 
-  @Prop({index: true})
+  @Prop({ index: true })
   template: string;
 
-  @Prop({unique: true})
+  @Prop({ unique: true })
   alias: string
-  
+
+  @Prop()
+  tv: []
+
 }
 
 export const CatSchema = SchemaFactory.createForClass(Cat);

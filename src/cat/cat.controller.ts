@@ -8,31 +8,31 @@ import { Cat } from './entities/cat.entities';
 
 @Controller('cat')
 export class CatController {
-  constructor(private readonly catService: CatService){}
+  constructor(private readonly catService: CatService) { }
 
   @Post('/create')
   async catCreate(
     @Body(new ValidationPipe()) catCreateDto: CatCreateDto
-  ): Promise<CatCreateDto>{
+  ): Promise<CatCreateDto> {
     return await this.catService.catCreate(catCreateDto)
   }
 
   @Get('/getAll')
-  async getAll():Promise<Cat[]>{    
+  async getAll(): Promise<Cat[]> {
     return await this.catService.catGetAll();
   }
 
   @Post('/getOneById')
   async getOneById(
     @Body(new ValidationPipe()) catIdDto: CatIdDto
-  ):Promise<Cat>{    
+  ): Promise<Cat> {
     return await this.catService.catGetOne(catIdDto);
   }
 
   @Post('/getWhereTpl')
   async getWheteTpl(
     @Body(new ValidationPipe()) catTplDto: CatTplDto
-  ):Promise<Cat[]>{    
+  ): Promise<Cat[]> {
     return await this.catService.catGetWhereTpl(catTplDto)
   }
 
@@ -40,14 +40,14 @@ export class CatController {
   @Patch('/update')
   async catRename(
     @Body(new ValidationPipe()) catUpdateDto: CatUpdateDto
-  ): Promise<CatCreateDto>{
+  ) {
     return await this.catService.catUpdate(catUpdateDto)
   }
 
   @Delete('/delete')
   async delete(
     @Body(new ValidationPipe()) catIdDto: CatIdDto
-  ):Promise<Cat>{
+  ): Promise<Cat> {
     return await this.catService.delete(catIdDto)
   }
 

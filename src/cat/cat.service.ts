@@ -24,7 +24,6 @@ export class CatService {
     try {
       const alias = this.helpersService.aliasGenerator(catCreateDto.name);
 
-
       await this.helpersService.isUniqueField([
         { name: 'name', value: catCreateDto.name },
         { name: 'alias', value: alias },
@@ -32,7 +31,8 @@ export class CatService {
 
       const catDto: CatDto = {
         ...catCreateDto,
-        alias
+        alias,
+        tv: []
       }
       const catCreated = await new this.catModel(catDto);
       return catCreated.save();
@@ -65,7 +65,7 @@ export class CatService {
     }
   }
 
-  async catUpdate(catUpdateDto: CatUpdateDto): Promise<CatCreateDto> {
+  async catUpdate(catUpdateDto: CatUpdateDto): Promise<Cat> {
     try {
 
       await this.helpersService.isUniqueField([
@@ -74,15 +74,10 @@ export class CatService {
 
       const alias = this.helpersService.aliasGenerator(catUpdateDto.name);
 
-      const cat = await this.catGetOne(catUpdateDto);
-      if (!cat) {
-        throw new NotFoundException('Cat is not found')
-      }
+      const upd = this.catModel.findOneAndUpdate({ _id: catUpdateDto.id }, { ...catUpdateDto, alias }, { new: true })
+      return await upd.exec()
 
-      cat.name = catUpdateDto.name;
-      cat.alias = alias;
-      cat.save();
-      return cat.toObject();
+
     } catch (error) {
       throw new BadRequestException(error.message)
     }

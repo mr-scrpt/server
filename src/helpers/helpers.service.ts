@@ -33,7 +33,7 @@ export class HelpersService {
       const doc = await model.findOne({
         [item.name]: item.value
       })
-      console.log("-> doc!1", doc);
+
       if (doc) {
         throw new ConflictException(`Duplicate "${item.name}" data`);
       }
