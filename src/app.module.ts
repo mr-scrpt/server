@@ -10,6 +10,7 @@ import { configRoot } from './config.root';
 import { CatModule } from './cat/cat.module';
 import { TemplateModule } from './template/template.module';
 import { HelpersModule } from './helpers/helpers.module';
+import { ProductModule } from './product/product.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { HelpersModule } from './helpers/helpers.module';
     CatModule,
     TemplateModule,
     HelpersModule,
+    ProductModule,
   ],
   controllers: [AppController],
   providers: [],
