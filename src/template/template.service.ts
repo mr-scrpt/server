@@ -51,7 +51,7 @@ export class TemplateService {
     }
   }
 
-  async tplDelete(templateIdDto: TemplateIdDto):Promise<TemplateDto>{
+  async tplDelete(templateIdDto: TemplateIdDto):Promise<Template>{
     try {
       const tpl = await this.tplGetOne(templateIdDto);
       if(!tpl){

@@ -18,21 +18,21 @@ export class CatController {
   }
 
   @Get('/getAll')
-  async getAll(){    
+  async getAll():Promise<Cat[]>{    
     return await this.catService.catGetAll();
   }
 
   @Post('/getOneById')
   async getOneById(
     @Body(new ValidationPipe()) catIdDto: CatIdDto
-  ){    
+  ):Promise<Cat>{    
     return await this.catService.catGetOne(catIdDto);
   }
 
   @Post('/getWhereTpl')
   async getWheteTpl(
     @Body(new ValidationPipe()) catTplDto: CatTplDto
-  ){    
+  ):Promise<Cat[]>{    
     return await this.catService.catGetWhereTpl(catTplDto)
   }
 
@@ -58,10 +58,5 @@ export class CatController {
     return await this.catService.catCreate(catCreateDto)
   }
 
-  @Delete('/delete')
-  async catDelete(
-    @Body(new ValidationPipe()) catCreateDto: CatCreateDto
-  ): Promise<CatCreateDto>{
-    return await this.catService.catCreate(catCreateDto)
-  } */
+  */
 }

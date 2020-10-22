@@ -39,7 +39,7 @@ export class TemplateController {
   @Delete('/delete')
   async delete(
     @Body(new ValidationPipe()) templateIdDto: TemplateIdDto
-  ){
+  ):Promise<Template>{
     return this.templateService.tplDelete(templateIdDto);
   }  
 }
