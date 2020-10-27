@@ -5,7 +5,7 @@ import { ConfirmAccountDto } from 'src/auth/dto/confirmAccount.dto';
 
 @Injectable()
 export class TokenService {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService) { }
 
   create(id: string, expiresIn?: string): string {
     if (!expiresIn) {

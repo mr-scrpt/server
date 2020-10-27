@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class TemplateIdDto {
-  @ApiProperty() 
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  readonly id: string;
- 
+  readonly id: Types.ObjectId;
+
 }

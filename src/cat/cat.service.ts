@@ -1,27 +1,27 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CatCreateDto } from './dto/catCreate.dto';
 import { CatIdDto } from './dto/catId.dto';
 import { CatUpdateDto } from './dto/catUpdate.dto';
 import { Cat } from './entities/cat.entities';
-import { HelpersService } from 'src/helpers/helpers.service';
+import { HelpersService } from 'src/common/helpers/helpers.service';
 import { CatDto } from './dto/cat.dto';
-import { CatUniqueDto } from './dto/catUnique.dto';
 import { CatTplDto } from './dto/catTpl.dto';
-import { resolve } from 'path';
-import { reject, values } from 'lodash';
+import { TemplateService } from 'src/template/template.service';
 
 
 @Injectable()
 export class CatService {
   constructor(
     @InjectModel(Cat.name) private catModel: Model<Cat>,
-    @Inject(HelpersService) private readonly helpersService: HelpersService
+    @Inject(HelpersService) private readonly helpersService: HelpersService,
+    @Inject(TemplateService) private readonly templateService: TemplateService
 
   ) { }
   async catCreate(catCreateDto: CatCreateDto): Promise<CatCreateDto> {
     try {
+      await this.templateService.tplCheck({ id: catCreateDto.template })
       const alias = this.helpersService.aliasGenerator(catCreateDto.name);
 
       await this.helpersService.isUniqueField([
@@ -67,14 +67,24 @@ export class CatService {
 
   async catUpdate(catUpdateDto: CatUpdateDto): Promise<Cat> {
     try {
+      await this.templateService.tplCheck({ id: catUpdateDto.template })
+      let toUpdate = {};
+      if (catUpdateDto.name) {
 
-      await this.helpersService.isUniqueField([
-        { name: 'name', value: catUpdateDto.name }
-      ], this.catModel)
+        await this.helpersService.isUniqueField([
+          { name: 'name', value: catUpdateDto.name }
+        ], this.catModel);
+        const alias = this.helpersService.aliasGenerator(catUpdateDto.name);
+        toUpdate = { ...catUpdateDto, alias }
 
-      const alias = this.helpersService.aliasGenerator(catUpdateDto.name);
+      } else {
+        toUpdate = { ...catUpdateDto }
+      }
 
-      const upd = this.catModel.findOneAndUpdate({ _id: catUpdateDto.id }, { ...catUpdateDto, alias }, { new: true })
+      const upd = this.catModel.findOneAndUpdate(
+        { _id: catUpdateDto.id },
+        { ...toUpdate },
+        { new: true })
       return await upd.exec()
 
 
@@ -86,7 +96,6 @@ export class CatService {
   async delete(catIdDto: CatIdDto): Promise<Cat> {
     try {
       const cat = await this.catGetOne(catIdDto);
-      console.log("-> cat", cat);
       if (!cat) {
         throw new NotFoundException('Categorie not found');
       }

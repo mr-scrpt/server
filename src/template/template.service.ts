@@ -11,37 +11,37 @@ import { Template } from './entities/template.entities';
 export class TemplateService {
   constructor(
     @InjectModel(Template.name) private readonly templateModel: Model<Template>
-  ){}
+  ) { }
 
-  async tplCreate(templateDto: TemplateDto): Promise<Template>{
+  async tplCreate(templateDto: TemplateDto): Promise<Template> {
     try {
       await this.isUniqueTpl(templateDto);
-      const tpl =  new this.templateModel(templateDto);
+      const tpl = new this.templateModel(templateDto);
       return tpl.save();
-      
+
     } catch (error) {
       throw new BadRequestException(error.message)
     }
   }
 
-  async tplGetOne(templateIdDto: TemplateIdDto): Promise<Template>{
+  async tplGetOne(templateIdDto: TemplateIdDto): Promise<Template> {
     try {
-      return await this.templateModel.findById(templateIdDto.id);      
+      return await this.templateModel.findById(templateIdDto.id);
 
     } catch (error) {
       throw new BadRequestException(error.message)
     }
   }
-  async tplGetAll():Promise<Template[]>{
+  async tplGetAll(): Promise<Template[]> {
     try {
       return await this.templateModel.find().exec();
     } catch (error) {
       throw new BadRequestException(error.message)
     }
   }
-  async tplRename (templateRenameDto: TemplateRenameDto): Promise<Template>{
+  async tplRename(templateRenameDto: TemplateRenameDto): Promise<Template> {
     try {
-      await this.isUniqueTpl({name: templateRenameDto.newName});
+      await this.isUniqueTpl({ name: templateRenameDto.newName });
       const tpl = await this.tplGetOne(templateRenameDto)
       tpl.name = templateRenameDto.newName;
       tpl.save()
@@ -51,25 +51,35 @@ export class TemplateService {
     }
   }
 
-  async tplDelete(templateIdDto: TemplateIdDto):Promise<Template>{
+  async tplDelete(templateIdDto: TemplateIdDto): Promise<Template> {
     try {
       const tpl = await this.tplGetOne(templateIdDto);
-      if(!tpl){
+      if (!tpl) {
         throw new NotFoundException('Tpl not found')
       }
-      this.templateModel.deleteOne({_id: templateIdDto.id}).exec()
+      this.templateModel.deleteOne({ _id: templateIdDto.id }).exec()
       return tpl;
-      
+
     } catch (error) {
       throw new BadRequestException(error.message)
     }
   }
 
-  
-  private async isUniqueTpl(templateDto: TemplateDto): Promise<boolean>{
-    const tpl = await this.templateModel.findOne({name: templateDto.name})
-    
-    if(tpl){
+  async tplCheck(templateIdDto: TemplateIdDto) {
+    try {
+      await this.tplGetOne(templateIdDto);
+      /* if (!exists) {
+        throw new NotFoundException('Tpl is not found');
+      } */
+    } catch (error) {
+
+      throw new BadRequestException(error.message)
+    }
+  }
+  private async isUniqueTpl(templateDto: TemplateDto): Promise<boolean> {
+    const tpl = await this.templateModel.findOne({ name: templateDto.name })
+
+    if (tpl) {
       throw new ConflictException('Duplicate tpl name');
     }
     return true;

@@ -9,7 +9,7 @@ import { TokenModule } from './token/token.module';
 import { configRoot } from './config.root';
 import { CatModule } from './cat/cat.module';
 import { TemplateModule } from './template/template.module';
-import { HelpersModule } from './helpers/helpers.module';
+import { HelpersModule } from './common/helpers/helpers.module';
 import { ProductModule } from './product/product.module';
 
 @Module({
@@ -34,4 +34,4 @@ import { ProductModule } from './product/product.module';
   controllers: [AppController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

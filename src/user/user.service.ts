@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -17,14 +18,19 @@ import { RegistrationDto } from 'src/auth/dto/registration.dto';
 import { userRoleEnum } from './enums/userRole.enum';
 import { userGenderEnum } from './enums/userGender.enum';
 import { UserUniqueDto } from './dto/userUnique.dto';
+import { TokenService } from 'src/token/token.service';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(TokenService) private readonly tokenService: TokenService,
+
+  ) { }
 
   async getOneById(id: string): Promise<User> {
     try {
-      
+
       const res = await this.userModel.findById({ _id: id }).exec();
       if (!res) {
         throw new Error('User Not Found!');
@@ -47,8 +53,8 @@ export class UserService {
   async getByEmail(email: string): Promise<User> {
     try {
       //Получаем только поле пароля
-      return await this.userModel.findOne({ "login.email":email }).exec();
-      
+      return await this.userModel.findOne({ "login.email": email }).exec();
+
     } catch (error) {
       throw new BadRequestException('User not found by email');
     }
@@ -61,7 +67,7 @@ export class UserService {
         email: registrationDto.email,
         phone: registrationDto.phone,
       });
-      
+
 
       const hashedPassword = await hash(registrationDto.password, 10);
       const registerUser: UserCreateDto = {
@@ -115,9 +121,9 @@ export class UserService {
     }
   }
 
-  async activedUser(id): Promise<UserSerializedDto>{ 
+  async activedUser(id): Promise<UserSerializedDto> {
     try {
-      const user = await this.getOneById(id); 
+      const user = await this.getOneById(id);
       if (this.isActiveUser(user.meta.status)) {
         throw new BadRequestException('User is already confirmed');
       }
@@ -125,23 +131,23 @@ export class UserService {
         throw new BadRequestException('User is blocked');
       }
       if (this.isPendingUser(user.meta.status)) {
-        user.meta.status = userStatusEnum.active;     
+        user.meta.status = userStatusEnum.active;
         user.markModified('meta.status'); // До сохранения отмечаем что внутренне поле изменено, инчаче юзер не сохранится 
         await user.save();
-        return this.userSerialized(user.toObject());  
+        return this.userSerialized(user.toObject());
       }
     } catch (error) {
       throw new BadRequestException(error.message);
     }
-   
-     
-     
+
+
+
     /* try {
       await this.userModel.updateOne({_id: id}, { "meta.status": status}).exec()
     } catch (error) {
       throw new BadRequestException(error.message);
     }  */
-    
+
   }
 
   isActiveUser(userStatus: userStatusEnum): boolean {
@@ -172,18 +178,38 @@ export class UserService {
       'contacts.email': userUniqueDto.email,
     });
 
-    if(userEmail){
+    if (userEmail) {
       throw new ConflictException('Duplicate email user data');
     }
-   
+
     const userPhone = await this.userModel.findOne({
       'contacts.phone': userUniqueDto.phone,
     });
-    if(userPhone){
+    if (userPhone) {
       throw new ConflictException('Duplicate phone user data');
     }
 
     return true;
   }
-  
+
+  async isAdminUser(token: string): Promise<boolean> {
+    try {
+
+      const id = await this.tokenService.verify(token);
+      if (!id) {
+        return false;
+      }
+      const user = await this.getOneById(id);
+      if (!user) {
+        return false
+      }
+      if (user.meta.role === userRoleEnum.admin) {
+        return true
+      }
+
+      return false;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CatCreateDto {
   @ApiProperty()
@@ -10,7 +11,7 @@ export class CatCreateDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  readonly template: string;
+  readonly template: Types.ObjectId;
 
   @IsArray()
   @ApiProperty()
